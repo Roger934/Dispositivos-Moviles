@@ -4,18 +4,22 @@ import '../model/incidencia.dart';
 class GestorIncidencias {
   final AlmacenLocal datos = AlmacenLocal();
   List<Incidencia> incidencias = [];
-  int cantidadPendientes = 0;
+  int get cantidadPendientes => contar('Pendiente');
 
   Future<void> iniciar() async {
     incidencias = await datos.leer();
-    cantidadPendientes =
-        incidencias.where((x) => x.estado == 'Pendiente').length;
   }
 
+  // Se uso .trim y .towercase para los espacios y mayusculas
   List<Incidencia> buscar(String texto) {
-    if (texto.trim().isEmpty) return incidencias;
-    return incidencias.where((x) => x.titulo.contains(texto)).toList();
-  }
+  final filtro = texto.trim().toLowerCase();
+  if (filtro.isEmpty) return incidencias;
+  return incidencias.where((x) {
+    final titulo = x.titulo.toLowerCase();
+    final descripcion = x.descripcion.toLowerCase();
+    return titulo.contains(filtro) || descripcion.contains(filtro);
+  }).toList();
+}
 
   Incidencia? porId(String id) {
     for (var x in incidencias) {
@@ -25,7 +29,6 @@ class GestorIncidencias {
   }
 
   int contar(String estado) {
-    if (estado == 'Pendiente') return cantidadPendientes;
     return incidencias.where((x) => x.estado == estado).length;
   }
 
@@ -33,6 +36,8 @@ class GestorIncidencias {
     for (var i = 0; i < incidencias.length; i++) {
       if (incidencias[i].id == id) {
         incidencias[i].estado = estado;
+        // Persistir el cambio de estado en el almacenamiento local
+        await datos.guardar(incidencias);
         break;
       }
     }
@@ -50,9 +55,10 @@ class GestorIncidencias {
       fecha: DateTime.now().toIso8601String().split('T').first,
     );
     incidencias.insert(0, nuevo);
-    cantidadPendientes++;
     await datos.guardar(incidencias);
   }
+
+
 
   Future<void> reiniciarDemo() async {
     await datos.restaurarDatosDeEjemplo();
