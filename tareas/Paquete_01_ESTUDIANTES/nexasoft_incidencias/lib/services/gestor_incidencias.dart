@@ -33,6 +33,8 @@ class GestorIncidencias {
     for (var i = 0; i < incidencias.length; i++) {
       if (incidencias[i].id == id) {
         incidencias[i].estado = estado;
+        // Persistir el cambio de estado en el almacenamiento local
+        await datos.guardar(incidencias);
         break;
       }
     }
@@ -53,6 +55,8 @@ class GestorIncidencias {
     cantidadPendientes++;
     await datos.guardar(incidencias);
   }
+
+
 
   Future<void> reiniciarDemo() async {
     await datos.restaurarDatosDeEjemplo();
