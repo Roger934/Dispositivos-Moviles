@@ -12,10 +12,16 @@ class GestorIncidencias {
         incidencias.where((x) => x.estado == 'Pendiente').length;
   }
 
+  // Se uso .trim y .towercase para los espacios y mayusculas
   List<Incidencia> buscar(String texto) {
-    if (texto.trim().isEmpty) return incidencias;
-    return incidencias.where((x) => x.titulo.contains(texto)).toList();
-  }
+  final filtro = texto.trim().toLowerCase();
+  if (filtro.isEmpty) return incidencias;
+  return incidencias.where((x) {
+    final titulo = x.titulo.toLowerCase();
+    final descripcion = x.descripcion.toLowerCase();
+    return titulo.contains(filtro) || descripcion.contains(filtro);
+  }).toList();
+}
 
   Incidencia? porId(String id) {
     for (var x in incidencias) {
