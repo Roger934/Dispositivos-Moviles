@@ -1,4 +1,6 @@
 class Incidencia {
+  static const List<String> prioridades = ['Baja', 'Media', 'Alta'];
+
   String id;
   String titulo;
   String descripcion;
@@ -6,6 +8,7 @@ class Incidencia {
   String categoria;
   String estado;
   String fecha;
+  String prioridad;
 
   Incidencia({
     required this.id,
@@ -15,7 +18,14 @@ class Incidencia {
     required this.categoria,
     required this.estado,
     required this.fecha,
-  });
+    String prioridad = 'Media',
+  }) : prioridad = validarPrioridad(prioridad);
+
+  // Garantiza solo valores aprobados y 'Media' para registros antiguos sin prioridad
+  static String validarPrioridad(String? valor) {
+    if (valor != null && prioridades.contains(valor)) return valor;
+    return 'Media';
+  }
 
   factory Incidencia.desdeJson(Map<String, dynamic> m) {
     return Incidencia(
@@ -26,6 +36,7 @@ class Incidencia {
       categoria: m['categoria']?.toString() ?? 'Software',
       estado: m['estado']?.toString() ?? 'Pendiente',
       fecha: m['fecha']?.toString() ?? '',
+      prioridad: validarPrioridad(m['prioridad']?.toString()),
     );
   }
 
@@ -38,6 +49,7 @@ class Incidencia {
       'categoria': categoria,
       'estado': estado,
       'fecha': fecha,
+      'prioridad': prioridad,
     };
   }
 }
