@@ -11,15 +11,22 @@ class GestorIncidencias {
   }
 
   // Se uso .trim y .towercase para los espacios y mayusculas
-  List<Incidencia> buscar(String texto) {
-  final filtro = texto.trim().toLowerCase();
-  if (filtro.isEmpty) return incidencias;
-  return incidencias.where((x) {
-    final titulo = x.titulo.toLowerCase();
-    final descripcion = x.descripcion.toLowerCase();
-    return titulo.contains(filtro) || descripcion.contains(filtro);
-  }).toList();
-}
+  List<Incidencia> buscar(
+    String texto, {
+    String estado = 'Todos',
+    String prioridad = 'Todas',
+  }) {
+    final filtro = texto.trim().toLowerCase();
+    return incidencias.where((x) {
+      final coincideTexto = filtro.isEmpty ||
+          x.titulo.toLowerCase().contains(filtro) ||
+          x.descripcion.toLowerCase().contains(filtro);
+      final coincideEstado = estado == 'Todos' || x.estado == estado;
+      final coincidePrioridad =
+          prioridad == 'Todas' || x.prioridad == prioridad;
+      return coincideTexto && coincideEstado && coincidePrioridad;
+    }).toList();
+  }
 
   Incidencia? porId(String id) {
     for (var x in incidencias) {

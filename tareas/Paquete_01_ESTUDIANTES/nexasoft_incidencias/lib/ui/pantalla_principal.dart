@@ -13,14 +13,32 @@ class PantallaPrincipal extends StatefulWidget {
 
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
   final GestorIncidencias g = GestorIncidencias();
+  final TextEditingController controlBusqueda = TextEditingController();
   bool cargando = true;
   String? error;
   String busqueda = '';
+  String filtroEstado = 'Todos';
+  String filtroPrioridad = 'Todas';
 
   @override
   void initState() {
     super.initState();
     cargar();
+  }
+
+  @override
+  void dispose() {
+    controlBusqueda.dispose();
+    super.dispose();
+  }
+
+  void limpiarFiltros() {
+    setState(() {
+      controlBusqueda.clear();
+      busqueda = '';
+      filtroEstado = 'Todos';
+      filtroPrioridad = 'Todas';
+    });
   }
 
   Future<void> cargar() async {
@@ -84,7 +102,11 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
 
   @override
   Widget build(BuildContext context) {
-    final items = g.buscar(busqueda);
+    final items = g.buscar(
+      busqueda,
+      estado: filtroEstado,
+      prioridad: filtroPrioridad,
+    );
     return Scaffold(
       appBar: AppBar(
         title: const Text('NexaSoft | Incidencias'),
@@ -151,6 +173,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 5),
                           child: TextField(
+                            controller: controlBusqueda,
                             decoration: const InputDecoration(
                               labelText: 'Buscar incidencias',
                               hintText: 'Ejemplo: WiFi, correo, pantalla',
@@ -158,6 +181,48 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                               border: OutlineInputBorder(),
                             ),
                             onChanged: (texto) => setState(() => busqueda = texto),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 5),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: filtroEstado,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Estado',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  items: ['Todos', 'Pendiente', 'En proceso', 'Resuelta']
+                                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                      .toList(),
+                                  onChanged: (v) => setState(() => filtroEstado = v ?? 'Todos'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: filtroPrioridad,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Prioridad',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  items: ['Todas', ...Incidencia.prioridades]
+                                      .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                                      .toList(),
+                                  onChanged: (v) => setState(() => filtroPrioridad = v ?? 'Todas'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              TextButton.icon(
+                                onPressed: limpiarFiltros,
+                                icon: const Icon(Icons.filter_alt_off),
+                                label: const Text('Limpiar filtros'),
+                              ),
+                            ],
                           ),
                         ),
                         Padding(
